@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidScript(data, userId) {
+      return data.userId is string &&
+             data.userId == userId &&
+             data.userId == request.auth.uid &&
+             data.filename is string && data.filename.size() >= 1 && data.filename.size() <= 120 &&
+             data.folder is string && data.folder.size() <= 100 &&
+             data.content is string && data.content.size() <= 100000 &&
+             data.category is string && data.category in ['PYTHON', 'MODEL_3D', 'DATA_SCIENCE', 'AUTOMATION'] &&
+             data.description is string && data.description.size() <= 300 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidAutomatedApp(data, userId) {
+      return data.userId is string &&
+             data.userId == userId &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 80 &&
+             data.summary is string && data.summary.size() <= 300 &&
+             data.iconKey is string && data.iconKey.size() >= 1 && data.iconKey.size() <= 40 &&
+             data.accentHex is string && data.accentHex.size() >= 4 && data.accentHex.size() <= 12 &&
+             data.pythonCode is string && data.pythonCode.size() <= 100000 &&
+             data.inputsSpec is string && data.inputsSpec.size() <= 20000 &&
+             data.triggerMode is string && data.triggerMode in ['MANUAL', 'ON_CHANGE', 'INTERVAL'] &&
+             data.intervalSeconds is int && data.intervalSeconds >= 0 && data.intervalSeconds <= 3600 &&
+             data.has3dViewport is bool &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId}/scripts/{scriptId} {
+      allow list: if isOwner(userId);
+      allow get: if isOwner(userId) && isValidId(scriptId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(scriptId) &&
+                       incoming().keys().hasAll(['userId', 'filename', 'folder', 'content', 'category', 'description', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'filename', 'folder', 'content', 'category', 'description', 'createdAt', 'updatedAt']) &&
+                       isValidScript(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(scriptId) &&
+                       isValidScript(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['filename', 'folder', 'content', 'category', 'description', 'updatedAt']);
+
+      allow delete: if isOwner(userId) && isValidId(scriptId);
+    }
+
+    match /users/{userId}/automated_apps/{appId} {
+      allow list: if isOwner(userId);
+      allow get: if isOwner(userId) && isValidId(appId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(appId) &&
+                       incoming().keys().hasAll(['userId', 'name', 'summary', 'iconKey', 'accentHex', 'pythonCode', 'inputsSpec', 'triggerMode', 'intervalSeconds', 'has3dViewport', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'name', 'summary', 'iconKey', 'accentHex', 'pythonCode', 'inputsSpec', 'triggerMode', 'intervalSeconds', 'has3dViewport', 'createdAt', 'updatedAt']) &&
+                       isValidAutomatedApp(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(appId) &&
+                       isValidAutomatedApp(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['name', 'summary', 'iconKey', 'accentHex', 'pythonCode', 'inputsSpec', 'triggerMode', 'intervalSeconds', 'has3dViewport', 'updatedAt']);
+
+      allow delete: if isOwner(userId) && isValidId(appId);
+    }
+  }
+}

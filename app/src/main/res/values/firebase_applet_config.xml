@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<resources>
+    <string name="firestore_database_id" translatable="false">ai-studio-android-pyforges-f4a4932b-4f2d-47a1-9bd3-93f34b6bb24b</string>
+    <string name="recaptcha_site_key" translatable="false">6LewTCsuAAAAAFKOytH9Ws9qDEO9CiL34KdAoO_D</string>
+</resources>

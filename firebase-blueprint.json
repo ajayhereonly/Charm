@@ -1,0 +1,129 @@
+{
+  "entities": {
+    "PythonScript": {
+      "title": "PythonScript",
+      "description": "A Python source file stored in the user's cloud IDE workspace, supporting standard scripts, data science notebooks, 3D parametric models, and automation scripts.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "filename": {
+          "type": "string",
+          "description": "Script filename (1-120 characters, e.g. main.py)."
+        },
+        "folder": {
+          "type": "string",
+          "description": "Virtual workspace folder name (0-100 characters)."
+        },
+        "content": {
+          "type": "string",
+          "description": "Full Python source code content (0-100000 characters)."
+        },
+        "category": {
+          "type": "string",
+          "enum": ["PYTHON", "MODEL_3D", "DATA_SCIENCE", "AUTOMATION"],
+          "description": "Script classification."
+        },
+        "description": {
+          "type": "string",
+          "description": "Short summary of what the script does (0-300 characters)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp() on create."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp() on create/update."
+        }
+      },
+      "required": ["userId", "filename", "folder", "content", "category", "description", "createdAt", "updatedAt"]
+    },
+    "AutomatedAppRecord": {
+      "title": "AutomatedAppRecord",
+      "description": "A user-built or AI-generated fully automated micro-application backed by executable Python logic, reactive UI controls, scheduled triggers, and optional 3D rendering.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the automated app (1-80 characters)."
+        },
+        "summary": {
+          "type": "string",
+          "description": "Short description of the automated app (0-300 characters)."
+        },
+        "iconKey": {
+          "type": "string",
+          "description": "Icon identifier token (1-40 characters)."
+        },
+        "accentHex": {
+          "type": "string",
+          "description": "Accent color hex string (4-12 characters)."
+        },
+        "pythonCode": {
+          "type": "string",
+          "description": "Python execution code invoked when app triggers fire (0-100000 characters)."
+        },
+        "inputsSpec": {
+          "type": "string",
+          "description": "Pipe-delimited or structured control specification for interactive inputs (0-20000 characters)."
+        },
+        "triggerMode": {
+          "type": "string",
+          "enum": ["MANUAL", "ON_CHANGE", "INTERVAL"],
+          "description": "Automation execution trigger strategy."
+        },
+        "intervalSeconds": {
+          "type": "integer",
+          "description": "Auto-run interval in seconds when triggerMode is INTERVAL (0-3600)."
+        },
+        "has3dViewport": {
+          "type": "boolean",
+          "description": "Whether the automated app embeds an interactive GPU-accelerated 3D viewport."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp() on create."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp() on create/update."
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "summary",
+        "iconKey",
+        "accentHex",
+        "pythonCode",
+        "inputsSpec",
+        "triggerMode",
+        "intervalSeconds",
+        "has3dViewport",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/scripts/{scriptId}": {
+      "schema": { "$ref": "#/entities/PythonScript" },
+      "description": "User-owned Python workspace scripts and 3D model source files."
+    },
+    "/users/{userId}/automated_apps/{appId}": {
+      "schema": { "$ref": "#/entities/AutomatedAppRecord" },
+      "description": "User-owned automated Python micro-applications."
+    }
+  }
+}

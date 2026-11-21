@@ -1,0 +1,6 @@
+{
+  "name": "PyForge Studio",
+  "description": "Interactive Python IDE with bundled scientific and 3D libraries, built-in terminal REPL, GPU-accelerated OpenGL ES 3D modeling viewport, and AI-powered automated app builder.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
